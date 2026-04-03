@@ -1,0 +1,98 @@
+version: "3.9"
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │  Two-Service Order & Payment Platform                                    │
+# │                                                                          │
+# │  Architecture:                                                           │
+# │    order-service  ──REST──▶  payment-service                            │
+# │         │                          │                                     │
+# │     order-db                  payment-db                                 │
+# │   (PostgreSQL:5432)        (PostgreSQL:5433)                             │
+# │                                                                          │
+# │  Database-per-service: the two databases are COMPLETELY SEPARATE.        │
+# └─────────────────────────────────────────────────────────────────────────┘
+
+services:
+
+  # ── Order Database ────────────────────────────────────────────────────────
+  order-db:
+    image: postgres:15-alpine
+    container_name: order-db
+    environment:
+      POSTGRES_USER: order_user
+      POSTGRES_PASSWORD: order_pass
+      POSTGRES_DB: order_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+      - ./order-service/migrations/001_create_orders.sql:/docker-entrypoint-initdb.d/001_create_orders.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U order_user -d order_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Payment Database ──────────────────────────────────────────────────────
+  payment-db:
+    image: postgres:15-alpine
+    container_name: payment-db
+    environment:
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_pass
+      POSTGRES_DB: payment_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+      - ./payment-service/migrations/001_create_payments.sql:/docker-entrypoint-initdb.d/001_create_payments.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment_user -d payment_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Payment Service ───────────────────────────────────────────────────────
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    environment:
+      DB_HOST: payment-db
+      DB_PORT: 5432
+      DB_USER: payment_user
+      DB_PASSWORD: payment_pass
+      DB_NAME: payment_db
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      payment-db:
+        condition: service_healthy
+
+  # ── Order Service ─────────────────────────────────────────────────────────
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      DB_HOST: order-db
+      DB_PORT: 5432
+      DB_USER: order_user
+      DB_PASSWORD: order_pass
+      DB_NAME: order_db
+      SERVER_PORT: 8080
+      PAYMENT_BASE_URL: http://payment-service:8081
+    ports:
+      - "8080:8080"
+    depends_on:
+      order-db:
+        condition: service_healthy
+      payment-service:
+        condition: service_started
+
+volumes:
+  order-db-data:
+  payment-db-data:

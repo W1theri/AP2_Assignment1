@@ -1,0 +1,6 @@
+﻿/order-service/order-service
+/payment-service/payment-service
+*.exe
+vendor/
+.idea/
+.vscode/
