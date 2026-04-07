@@ -1,8 +1,6 @@
 # AP2 Assignment 1 – Clean Architecture Microservices (Order & Payment)
 
-**Student:** Taubakabyl Nurlybek  
-**Course:** Advanced Programming 2  
-**Stack:** Go 1.21 · Gin · PostgreSQL · Docker Compose
+
 
 ---
 
