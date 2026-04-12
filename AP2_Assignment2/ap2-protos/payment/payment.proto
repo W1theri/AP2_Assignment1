@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "github.com/YOURUSERNAME/ap2-generated/payment";
+
+import "google/protobuf/timestamp.proto";
+
+// PaymentService is called by the Order Service to authorize a payment.
+service PaymentService {
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+}
+
+// PaymentRequest mirrors the domain: amount is in CENTS (int64), same as Assignment 1.
+message PaymentRequest {
+  string order_id = 1;
+  int64  amount   = 2; // cents, e.g. 1000 = $10.00
+}
+
+// PaymentResponse matches the business output from payment_usecase.go.
+message PaymentResponse {
+  string                    transaction_id = 1; // same field as domain.Payment.TransactionID
+  string                    status         = 2; // "Authorized" | "Declined"
+  google.protobuf.Timestamp processed_at   = 3;
+}

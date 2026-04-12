@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "github.com/YOURUSERNAME/ap2-generated/order";
+
+import "google/protobuf/timestamp.proto";
+
+// OrderService exposes a server-side streaming RPC for real-time order status.
+// The Order Service acts as the gRPC SERVER for this contract.
+service OrderService {
+  // SubscribeToOrderUpdates streams status changes whenever the DB record changes.
+  rpc SubscribeToOrderUpdates(OrderRequest) returns (stream OrderStatusUpdate);
+}
+
+message OrderRequest {
+  string order_id = 1;
+}
+
+// OrderStatusUpdate reflects domain.Order statuses: Pending, Paid, Failed, Cancelled.
+message OrderStatusUpdate {
+  string                    order_id   = 1;
+  string                    status     = 2; // "Pending" | "Paid" | "Failed" | "Cancelled"
+  google.protobuf.Timestamp updated_at = 3;
+}

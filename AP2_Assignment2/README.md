@@ -1,5 +1,17 @@
 # AP2 Assignment 2 — gRPC Migration
 
+**Student:** YOUR_NAME YOUR_SURNAME  
+**Group:** YOUR_GROUP
+
+## Repository Links
+
+| Repo | URL |
+|------|-----|
+| Proto files (Repo A) | https://github.com/YOURUSERNAME/ap2-protos |
+| Generated code (Repo B) | https://github.com/YOURUSERNAME/ap2-generated |
+| Services (this repo, branch `grpc-migration`) | https://github.com/YOURUSERNAME/AP2_Assignment1 |
+
+---
 
 ## What Changed from Assignment 1
 
