@@ -3,15 +3,16 @@ package http
 import (
 	"errors"
 	"net/http"
-	"order-service/internal/domain"
-	"order-service/internal/usecase"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
+	"order-service/internal/domain"
+	"order-service/internal/usecase"
 )
 
 // OrderHandler is the thin delivery layer.
-// Parse → call use case → respond. Nothing else.
+// Parse -> call use case -> respond.
 type OrderHandler struct {
 	uc *usecase.OrderUseCase
 }
@@ -22,8 +23,6 @@ func NewOrderHandler(uc *usecase.OrderUseCase) *OrderHandler {
 }
 
 // RegisterRoutes registers all order endpoints on the router.
-// NOTE: /orders/recent must be registered BEFORE /orders/:id,
-// otherwise Gin would match "recent" as the :id parameter.
 func (h *OrderHandler) RegisterRoutes(r *gin.Engine) {
 	r.POST("/orders", h.CreateOrder)
 	r.GET("/orders/recent", h.GetRecentOrders)
@@ -31,9 +30,7 @@ func (h *OrderHandler) RegisterRoutes(r *gin.Engine) {
 	r.PATCH("/orders/:id/cancel", h.CancelOrder)
 }
 
-// GetRecentOrders handles GET /orders/recent?limit=5
-// Returns the N most recently created orders sorted by created_at DESC.
-// Query param `limit` defaults to 10, max 100.
+// GetRecentOrders handles GET /orders/recent?limit=5.
 func (h *OrderHandler) GetRecentOrders(c *gin.Context) {
 	limit := 10
 	if raw := c.Query("limit"); raw != "" {
@@ -51,7 +48,6 @@ func (h *OrderHandler) GetRecentOrders(c *gin.Context) {
 		return
 	}
 
-	// Return an empty array (not null) when there are no orders yet
 	result := make([]gin.H, 0, len(orders))
 	for _, o := range orders {
 		result = append(result, orderResponse(o))
@@ -64,15 +60,13 @@ func (h *OrderHandler) GetRecentOrders(c *gin.Context) {
 	})
 }
 
-// createOrderRequest is the JSON body for POST /orders.
 type createOrderRequest struct {
 	CustomerID string `json:"customer_id" binding:"required"`
-	ItemName   string `json:"item_name"   binding:"required"`
-	Amount     int64  `json:"amount"      binding:"required"`
+	ItemName   string `json:"item_name" binding:"required"`
+	Amount     int64  `json:"amount" binding:"required"`
 }
 
 // CreateOrder handles POST /orders.
-// Reads optional Idempotency-Key header for duplicate-request protection (bonus).
 func (h *OrderHandler) CreateOrder(c *gin.Context) {
 	var req createOrderRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -80,7 +74,6 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	// Bonus: idempotency support via header
 	idempotencyKey := c.GetHeader("Idempotency-Key")
 
 	order, err := h.uc.CreateOrder(c.Request.Context(), usecase.CreateOrderRequest{
@@ -94,9 +87,15 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 			return
 		}
-		// Payment Service was unavailable — return 503
-		c.JSON(http.StatusServiceUnavailable, gin.H{
-			"error":  "payment service unavailable",
+		if errors.Is(err, usecase.ErrPaymentUnavailable) {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"error":  "payment service unavailable",
+				"detail": err.Error(),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":  "internal server error",
 			"detail": err.Error(),
 		})
 		return
@@ -144,8 +143,6 @@ func (h *OrderHandler) CancelOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, orderResponse(order))
 }
 
-// orderResponse converts a domain.Order to a JSON-friendly map.
-// Conversion happens in the delivery layer — the domain entity stays clean.
 func orderResponse(o *domain.Order) gin.H {
 	return gin.H{
 		"id":          o.ID,

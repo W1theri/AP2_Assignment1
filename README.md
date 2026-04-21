@@ -43,7 +43,7 @@
 Contract-First Flow:
   ap2-protos (Repo A) ──push──► GitHub Actions (protoc) ──► ap2-generated (Repo B)
                                                                      │
-                                              go get github.com/YOURUSERNAME/ap2-generated
+                                              go get github.com/W1theri/ap2-generated
                                                      │                     │
                                               order-service          payment-service
 ```

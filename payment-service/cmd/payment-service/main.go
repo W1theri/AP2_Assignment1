@@ -7,7 +7,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/YOURUSERNAME/ap2-generated/payment"
+	_ "github.com/W1theri/ap2-generated/codec/jsoncodec"
+	pb "github.com/W1theri/ap2-generated/payment"
 
 	"payment-service/internal/app"
 	"payment-service/internal/interceptor"

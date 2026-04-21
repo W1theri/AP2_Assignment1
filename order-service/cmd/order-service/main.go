@@ -7,7 +7,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	orderpb "github.com/YOURUSERNAME/ap2-generated/order"
+	_ "github.com/W1theri/ap2-generated/codec/jsoncodec"
+	orderpb "github.com/W1theri/ap2-generated/order"
 
 	"order-service/internal/app"
 	"order-service/internal/client"
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	paymentGRPCAddr := getEnv("PAYMENT_GRPC_ADDR", "localhost:50051")
-	orderGRPCAddr   := getEnv("GRPC_STREAM_PORT", ":50052")
+	orderGRPCAddr := getEnv("GRPC_STREAM_PORT", ":50052")
 
 	// 1. DB (не изменилось)
 	db, err := app.NewPostgresDB(cfg)

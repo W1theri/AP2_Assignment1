@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/YOURUSERNAME/ap2-generated/order"
+	pb "github.com/W1theri/ap2-generated/order"
 	"order-service/internal/repository"
 )
 

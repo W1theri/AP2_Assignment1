@@ -2,8 +2,11 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"order-service/internal/domain"
 )
+
+var ErrPaymentUnavailable = errors.New("payment service unavailable")
 
 // OrderRepository is the Port for persistence.
 // The use case layer depends on this interface, never on *sql.DB or any concrete type.

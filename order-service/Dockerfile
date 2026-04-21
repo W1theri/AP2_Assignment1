@@ -1,12 +1,13 @@
 FROM golang:1.21-alpine AS builder
-WORKDIR /app
-COPY go.mod go.sum ./
+WORKDIR /src
+COPY ap2-generated ./ap2-generated
+COPY order-service ./order-service
+WORKDIR /src/order-service
 RUN go mod download
-COPY . .
-RUN go build -o order-server ./cmd/order-service
+RUN go build -o /out/order-server ./cmd/order-service
 
 FROM alpine:3.19
 WORKDIR /app
-COPY --from=builder /app/order-server .
+COPY --from=builder /out/order-server .
 EXPOSE 8080 50052
 CMD ["./order-server"]

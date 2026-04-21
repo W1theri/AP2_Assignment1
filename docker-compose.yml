@@ -56,8 +56,8 @@ services:
   # ── Payment Service ───────────────────────────────────────────────────────
   payment-service:
     build:
-      context: ./payment-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: payment-service/Dockerfile
     container_name: payment-service
     environment:
       DB_HOST:     payment-db
@@ -77,8 +77,8 @@ services:
   # ── Order Service ─────────────────────────────────────────────────────────
   order-service:
     build:
-      context: ./order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: order-service/Dockerfile
     container_name: order-service
     environment:
       DB_HOST:             order-db

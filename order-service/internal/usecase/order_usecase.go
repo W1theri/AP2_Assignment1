@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"order-service/internal/domain"
 	"time"
 
@@ -57,7 +58,7 @@ func (uc *OrderUseCase) CreateOrder(ctx context.Context, req CreateOrderRequest)
 		CreatedAt:  time.Now().UTC(),
 	}
 	if err := order.Validate(); err != nil {
-		return nil, err
+		return nil, errors.Join(ErrPaymentUnavailable, err)
 	}
 
 	// --- Persist as Pending ---

@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/YOURUSERNAME/ap2-generated/payment"
+	pb "github.com/W1theri/ap2-generated/payment"
 
 	// UseCase остался ТОЧНО таким же, как в Assignment 1.
 	// Меняется только этот delivery-слой (было HTTP, стало gRPC).

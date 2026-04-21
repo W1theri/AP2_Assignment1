@@ -19,19 +19,21 @@ import (
 	"os"
 	"time"
 
+	"github.com/W1theri/ap2-generated/codec/jsoncodec"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	pb "github.com/YOURUSERNAME/ap2-generated/order"
+	pb "github.com/W1theri/ap2-generated/order"
 )
 
 func main() {
-	addr    := getEnv("GRPC_STREAM_PORT", "localhost:50052")
+	addr := getEnv("GRPC_STREAM_PORT", "localhost:50052")
 	orderID := mustEnv("ORDER_ID")
 
 	conn, err := grpc.NewClient(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(grpc.CallContentSubtype(jsoncodec.Name)),
 	)
 	if err != nil {
 		log.Fatalf("dial %s: %v", addr, err)
@@ -50,7 +52,8 @@ func main() {
 	}
 
 	fmt.Printf("✓ Subscribed to order %s\n", orderID)
-	fmt.Println("Waiting for real-time status updates from DB...\n")
+	fmt.Println("Waiting for real-time status updates from DB...")
+	fmt.Println()
 
 	for {
 		update, err := stream.Recv()

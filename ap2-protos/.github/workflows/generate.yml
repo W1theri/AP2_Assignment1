@@ -54,7 +54,7 @@ jobs:
       - name: Checkout Repo B (generated code)
         uses: actions/checkout@v4
         with:
-          repository: YOURUSERNAME/ap2-generated
+          repository: W1theri/ap2-generated
           path: repo-b
           token: ${{ secrets.GEN_REPO_TOKEN }}
 
