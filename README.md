@@ -12,43 +12,7 @@
 | Domain entities | — | **Unchanged** |
 | Repository | — | **+ `WatchOrderStatus()`** for streaming |
 
----
 
-## Architecture
-
-```
-┌─────────────┐   POST /orders    ┌────────────────────────────────────────┐
-│  Postman /  │ ────────────────► │            order-service                │
-│  Frontend   │                   │  ┌──────────────────────────────────┐   │
-└─────────────┘                   │  │  REST Handler (Gin) :8080        │   │
-                                  │  │  POST /orders                    │   │
-                                  │  │  GET  /orders/recent             │   │
-┌─────────────┐  gRPC streaming   │  │  GET  /orders/:id                │   │
-│ stream-     │ ◄──────────────── │  │  PATCH /orders/:id/cancel        │   │
-│ client CLI  │  :50052           │  ├──────────────────────────────────┤   │
-└─────────────┘                   │  │  Use Case (UNCHANGED from A1)    │   │  gRPC ProcessPayment
-                                  │  ├──────────────────────────────────┤   │ ─────────────────────►
-                                  │  │  GRPCPaymentClient :50051        │   │   payment-service
-                                  │  ├──────────────────────────────────┤   │   ┌────────────────┐
-                                  │  │  OrderRepo + WatchOrderStatus    │   │   │  gRPC Server   │
-                                  │  ├──────────────────────────────────┤   │   │  :50051        │
-                                  │  │  gRPC Streaming Server :50052    │   │   ├────────────────┤
-                                  │  └──────────────────────────────────┘   │   │  UseCase (A1)  │
-                                  │              │                           │   ├────────────────┤
-                                  │         order-db                         │   │  + Interceptor │
-                                  └────────────────────────────────────────┘   ├────────────────┤
-                                                                                │  payment-db    │
-                                                                                └────────────────┘
-
-Contract-First Flow:
-  ap2-protos (Repo A) ──push──► GitHub Actions (protoc) ──► ap2-generated (Repo B)
-                                                                     │
-                                              go get github.com/W1theri/ap2-generated
-                                                     │                     │
-                                              order-service          payment-service
-```
-
----
 
 ## How to Run
 
