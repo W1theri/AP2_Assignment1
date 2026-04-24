@@ -135,14 +135,3 @@ curl -X PATCH http://localhost:8080/orders/<id>/cancel
 
 ---
 
-## Grading Checklist
-
-| Criterion | Evidence |
-|---|---|
-| **Contract-First 30%** | `.github/workflows/generate.yml` auto-generates `.pb.go` on push to `ap2-protos` |
-| **gRPC Implementation 30%** | `payment-service/internal/transport/grpc/payment_handler.go` (server); `order-service/internal/client/payment_grpc_client.go` (client) |
-| **Clean Architecture** | `order_usecase.go`, `payment_usecase.go`, all domain files — zero changes from A1 |
-| **Proto Design 15%** | `int64 amount` (cents), `google.protobuf.Timestamp`, `go_package`, separate services |
-| **Streaming + DB 15%** | `WatchOrderStatus()` polls PostgreSQL every 500ms; status pushed only on real change |
-| **Documentation 10%** | This README + architecture diagram + git history |
-| **BONUS Interceptor +10%** | `payment-service/internal/interceptor/logging.go` — logs method + duration |
