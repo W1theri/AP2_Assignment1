@@ -9,6 +9,7 @@ type Payment struct {
 	OrderID       string
 	TransactionID string
 	Amount        int64 // Amount in cents (e.g., 1000 = $10.00)
+	CustomerEmail string
 	Status        string // "Authorized" | "Declined"
 }
 
