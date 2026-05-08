@@ -14,6 +14,7 @@ type CreateOrderRequest struct {
 	CustomerID     string
 	ItemName       string
 	Amount         int64
+	CustomerEmail  string
 	IdempotencyKey string // optional; used for duplicate detection
 }
 
@@ -72,8 +73,8 @@ func (uc *OrderUseCase) CreateOrder(ctx context.Context, req CreateOrderRequest)
 		}
 	}
 
-	// --- Call Payment Service (synchronous REST, with timeout enforced by client) ---
-	payResult, err := uc.paymentClient.Authorize(ctx, order.ID, order.Amount)
+	// --- Call Payment Service (synchronous gRPC, with timeout enforced by client) ---
+	payResult, err := uc.paymentClient.Authorize(ctx, order.ID, order.Amount, req.CustomerEmail)
 	if err != nil {
 		// Payment Service unavailable (timeout, network error, 5xx).
 		// Design decision: mark order as "Failed" so it is not left in an ambiguous Pending state.

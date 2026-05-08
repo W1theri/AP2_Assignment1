@@ -1,6 +1,8 @@
 FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
+ENV GOPROXY=https://goproxy.io,direct
+RUN apk add --no-cache git ca-certificates
 
 # Copy go mod files first for layer caching
 COPY notification-service/go.mod notification-service/go.sum ./

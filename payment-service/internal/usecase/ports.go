@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"payment-service/internal/domain"
+	"payment-service/internal/messaging"
 )
 
 // PaymentRepository is the Port (interface) that the use case depends on.
@@ -11,4 +12,8 @@ import (
 type PaymentRepository interface {
 	Save(ctx context.Context, payment *domain.Payment) error
 	FindByOrderID(ctx context.Context, orderID string) (*domain.Payment, error)
+}
+
+type MessagePublisher interface {
+	PublishPaymentCompleted(ctx context.Context, event messaging.PaymentCompletedEvent) error
 }

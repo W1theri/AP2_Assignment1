@@ -13,8 +13,9 @@ service PaymentService {
 
 // PaymentRequest mirrors the domain: amount is in CENTS (int64), same as Assignment 1.
 message PaymentRequest {
-  string order_id = 1;
-  int64  amount   = 2; // cents, e.g. 1000 = $10.00
+  string order_id       = 1;
+  int64  amount         = 2; // cents, e.g. 1000 = $10.00
+  string customer_email = 3;
 }
 
 // PaymentResponse matches the business output from payment_usecase.go.

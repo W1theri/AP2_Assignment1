@@ -1,0 +1,12 @@
+.git
+.gitignore
+**/.gocache
+.gocache-test
+gomodcache
+vendor
+bin
+*.exe
+*.test
+*.out
+README.md
+ap2-protos

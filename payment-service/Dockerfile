@@ -1,5 +1,7 @@
 FROM golang:1.21-alpine AS builder
 WORKDIR /src
+ENV GOPROXY=https://goproxy.io,direct
+RUN apk add --no-cache git ca-certificates
 COPY ap2-generated ./ap2-generated
 COPY payment-service ./payment-service
 WORKDIR /src/payment-service

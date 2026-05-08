@@ -21,12 +21,12 @@ func main() {
 	// Connect to RabbitMQ with retry (broker might not be ready immediately)
 	var c *consumer.RabbitMQConsumer
 	var err error
-	for attempt := 1; attempt <= 10; attempt++ {
+	for attempt := 1; attempt <= 30; attempt++ {
 		c, err = consumer.New(amqpURL, store)
 		if err == nil {
 			break
 		}
-		log.Printf("[Notification] RabbitMQ not ready (attempt %d/10): %v. Retrying in 3s...", attempt, err)
+		log.Printf("[Notification] RabbitMQ not ready (attempt %d/30): %v. Retrying in 3s...", attempt, err)
 		time.Sleep(3 * time.Second)
 	}
 	if err != nil {

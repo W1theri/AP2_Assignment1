@@ -3,8 +3,9 @@ package payment
 import timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 
 type PaymentRequest struct {
-	OrderId string `json:"order_id,omitempty"`
-	Amount  int64  `json:"amount,omitempty"`
+	OrderId       string `json:"order_id,omitempty"`
+	Amount        int64  `json:"amount,omitempty"`
+	CustomerEmail string `json:"customer_email,omitempty"`
 }
 
 type PaymentResponse struct {
