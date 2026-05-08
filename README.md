@@ -45,7 +45,7 @@ All services start automatically. RabbitMQ Management UI available at http://loc
 # 1. Create an order (triggers payment + notification)
 curl -X POST http://localhost:8080/orders \
   -H "Content-Type: application/json" \
-  -d '{"customer_id": "cust-1", "amount": 2500, "customer_email": "alice@example.com"}'
+  -d '{"customer_id": "cust-1", "item_name": "AP2 Book", "amount": 2500, "customer_email": "alice@example.com"}'
 
 # 2. Watch notification-service logs
 docker logs notification-service -f
@@ -96,6 +96,7 @@ ACK is sent **only after** the business effect (log) succeeds. This ensures **at
 |---|---|
 | **Durable queue** | `durable: true` in `QueueDeclare` — survives broker restart |
 | **Persistent messages** | `DeliveryMode: amqp.Persistent` in publisher |
+| **Publisher confirms** | Payment Service waits for broker ACK before treating publish as successful |
 | **Manual ACKs** | `autoAck: false` in consumer |
 | **QoS prefetch=1** | `ch.Qos(1, 0, false)` — one message at a time, fair dispatch |
 | **At-least-once delivery** | ACK only after success + idempotent consumer |
@@ -126,4 +127,3 @@ ACK is sent **only after** the business effect (log) succeeds. This ensures **at
 │   └── cmd/notification-service/main.go
 └── docker-compose.yml          # UPDATED: added RabbitMQ + notification-service
 ```
-

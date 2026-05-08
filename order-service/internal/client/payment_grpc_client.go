@@ -39,13 +39,15 @@ func (c *GRPCPaymentClient) Authorize(
 	ctx context.Context,
 	orderID string,
 	amount int64,
+	customerEmail string,
 ) (*usecase.PaymentResult, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
 	resp, err := c.client.ProcessPayment(ctx, &pb.PaymentRequest{
-		OrderId: orderID,
-		Amount:  amount,
+		OrderId:       orderID,
+		Amount:        amount,
+		CustomerEmail: customerEmail,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("grpc ProcessPayment: %w", err)

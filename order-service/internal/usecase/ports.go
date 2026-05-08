@@ -29,5 +29,5 @@ type PaymentResult struct {
 // The concrete HTTP implementation lives in the client package.
 // This allows the use case to be tested with a mock client.
 type PaymentClient interface {
-	Authorize(ctx context.Context, orderID string, amount int64) (*PaymentResult, error)
+	Authorize(ctx context.Context, orderID string, amount int64, customerEmail string) (*PaymentResult, error)
 }

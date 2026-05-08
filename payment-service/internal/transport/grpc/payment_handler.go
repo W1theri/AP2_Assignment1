@@ -35,9 +35,9 @@ func (s *PaymentGRPCServer) ProcessPayment(
 ) (*pb.PaymentResponse, error) {
 
 	result, err := s.uc.Authorize(ctx, usecase.AuthorizeRequest{
-		OrderID: req.OrderId,
-		Amount:  req.Amount,
-		// CustomerEmail not in proto; usecase will generate a default email
+		OrderID:       req.OrderId,
+		Amount:        req.Amount,
+		CustomerEmail: req.CustomerEmail,
 	})
 	if err != nil {
 		// Маппинг доменных ошибок в gRPC status codes

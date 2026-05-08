@@ -84,8 +84,7 @@ func (uc *PaymentUseCase) Authorize(ctx context.Context, req AuthorizeRequest) (
 	}
 
 	if pubErr := uc.publisher.PublishPaymentCompleted(ctx, event); pubErr != nil {
-		// Log but don't fail — payment was committed to DB
-		fmt.Printf("[Payment] WARNING: failed to publish event for order %s: %v\n", req.OrderID, pubErr)
+		return nil, fmt.Errorf("publish payment.completed event for order %s: %w", req.OrderID, pubErr)
 	}
 
 	return &AuthorizeResult{

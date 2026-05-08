@@ -1,4 +1,5 @@
 /gomodcache/
+**/.gocache/
 vendor/
 bin/
 *.exe

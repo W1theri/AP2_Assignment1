@@ -61,9 +61,10 @@ func (h *OrderHandler) GetRecentOrders(c *gin.Context) {
 }
 
 type createOrderRequest struct {
-	CustomerID string `json:"customer_id" binding:"required"`
-	ItemName   string `json:"item_name" binding:"required"`
-	Amount     int64  `json:"amount" binding:"required"`
+	CustomerID    string `json:"customer_id" binding:"required"`
+	ItemName      string `json:"item_name" binding:"required"`
+	Amount        int64  `json:"amount" binding:"required"`
+	CustomerEmail string `json:"customer_email" binding:"required,email"`
 }
 
 // CreateOrder handles POST /orders.
@@ -80,6 +81,7 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 		CustomerID:     req.CustomerID,
 		ItemName:       req.ItemName,
 		Amount:         req.Amount,
+		CustomerEmail:  req.CustomerEmail,
 		IdempotencyKey: idempotencyKey,
 	})
 	if err != nil {
