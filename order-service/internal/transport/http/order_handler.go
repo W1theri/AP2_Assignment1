@@ -24,10 +24,19 @@ func NewOrderHandler(uc *usecase.OrderUseCase) *OrderHandler {
 
 // RegisterRoutes registers all order endpoints on the router.
 func (h *OrderHandler) RegisterRoutes(r *gin.Engine) {
+	r.GET("/health", h.HealthCheck)
 	r.POST("/orders", h.CreateOrder)
 	r.GET("/orders/recent", h.GetRecentOrders)
 	r.GET("/orders/:id", h.GetOrder)
 	r.PATCH("/orders/:id/cancel", h.CancelOrder)
+}
+
+// HealthCheck handles GET /health.
+func (h *OrderHandler) HealthCheck(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "healthy",
+		"service": "order-service",
+	})
 }
 
 // GetRecentOrders handles GET /orders/recent?limit=5.

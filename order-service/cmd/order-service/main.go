@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 
 	"google.golang.org/grpc"
 
@@ -11,7 +12,9 @@ import (
 	orderpb "github.com/W1theri/ap2-generated/order"
 
 	"order-service/internal/app"
+	"order-service/internal/cache"
 	"order-service/internal/client"
+	"order-service/internal/middleware"
 	"order-service/internal/repository"
 	grpchandler "order-service/internal/transport/grpc"
 	httphandler "order-service/internal/transport/http"
@@ -22,11 +25,10 @@ import (
 
 // main — Composition Root.
 //
-// Assignment 2 изменения (только здесь и в client/):
-//   - client.HTTPPaymentClient → client.GRPCPaymentClient
-//   - добавлен gRPC сервер для streaming (GRPC_STREAM_PORT)
-//
-// UseCase, Repository, HTTP handlers — ИДЕНТИЧНЫ Assignment 1.
+// Assignment 4 changes:
+//   - Added Redis cache for cache-aside pattern
+//   - Added rate limiter middleware
+//   - Added cache invalidation on order status changes
 func main() {
 	cfg := app.Config{
 		DBHost:         getEnv("DB_HOST", "localhost"),
@@ -40,6 +42,10 @@ func main() {
 
 	paymentGRPCAddr := getEnv("PAYMENT_GRPC_ADDR", "localhost:50051")
 	orderGRPCAddr := getEnv("GRPC_STREAM_PORT", ":50052")
+	redisURL := getEnv("REDIS_URL", "redis://localhost:6379")
+	cacheTTLSeconds := getEnvInt("CACHE_TTL", 300)
+	rateLimitRequests := getEnvInt("RATE_LIMIT_REQUESTS", 10)
+	rateLimitWindow := getEnvInt("RATE_LIMIT_WINDOW", 60)
 
 	// 1. DB (не изменилось)
 	db, err := app.NewPostgresDB(cfg)
@@ -48,22 +54,39 @@ func main() {
 	}
 	defer db.Close()
 
-	// 2. Repository (не изменилось)
-	orderRepo := repository.NewPostgresOrderRepository(db)
+	// 2. Redis Cache (НОВОЕ для Assignment 4)
+	var cacheService cache.Cache
+	redisCache, err := cache.NewRedisCache(redisURL)
+	if err != nil {
+		log.Printf("Warning: Failed to initialize Redis cache: %v. Using no-op cache.\n", err)
+		cacheService = &cache.NoOpCache{}
+	} else {
+		defer redisCache.Close()
+		cacheService = redisCache
+	}
 
-	// 3. Payment Client — ИЗМЕНЕНИЕ: gRPC вместо HTTP
+	// 3. Repository (now with cache support)
+	orderRepo := repository.NewPostgresOrderRepository(db)
+	cachedRepo := repository.NewCachedOrderRepository(orderRepo, cacheService, cacheTTLSeconds)
+
+	// 4. Payment Client
 	paymentClient, err := client.NewGRPCPaymentClient(paymentGRPCAddr)
 	if err != nil {
 		log.Fatalf("Failed to create gRPC payment client: %v", err)
 	}
 
-	// 4. Use Case (не изменилось)
-	orderUC := usecase.NewOrderUseCase(orderRepo, paymentClient)
+	// 5. Use Case
+	orderUC := usecase.NewOrderUseCase(cachedRepo, paymentClient)
 
-	// 5a. REST (не изменилось — все эндпоинты Assignment 1 работают)
+	// 6a. REST with Rate Limiter (ИЗМЕНЕНО)
 	go func() {
 		handler := httphandler.NewOrderHandler(orderUC)
 		router := gin.Default()
+
+		// Add rate limiter middleware (НОВОЕ)
+		rateLimiter := middleware.NewRateLimiter(cacheService, rateLimitRequests, rateLimitWindow)
+		router.Use(rateLimiter.Middleware())
+
 		handler.RegisterRoutes(router)
 		log.Printf("[order-service] REST listening on port %s\n", cfg.ServerPort)
 		if err := router.Run(":" + cfg.ServerPort); err != nil {
@@ -71,7 +94,7 @@ func main() {
 		}
 	}()
 
-	// 5b. gRPC Streaming (НОВОЕ)
+	// 6b. gRPC Streaming (uses DB repo directly — WatchOrderStatus is not cached)
 	streamHandler := grpchandler.NewOrderGRPCServer(orderRepo)
 	grpcServer := grpc.NewServer()
 	orderpb.RegisterOrderServiceServer(grpcServer, streamHandler)
@@ -90,6 +113,15 @@ func main() {
 func getEnv(key, defaultVal string) string {
 	if val := os.Getenv(key); val != "" {
 		return val
+	}
+	return defaultVal
+}
+
+func getEnvInt(key string, defaultVal int) int {
+	if val := os.Getenv(key); val != "" {
+		if intVal, err := strconv.Atoi(val); err == nil {
+			return intVal
+		}
 	}
 	return defaultVal
 }

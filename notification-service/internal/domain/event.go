@@ -5,7 +5,8 @@ package domain
 type PaymentCompletedEvent struct {
 	EventID       string  `json:"event_id"`       // Unique ID for idempotency
 	OrderID       string  `json:"order_id"`
-	Amount        float64 `json:"amount"`         // Amount in dollars
+	TransactionID string  `json:"transaction_id"`
+	Amount        float64 `json:"amount"` // Amount in dollars
 	CustomerEmail string  `json:"customer_email"`
 	Status        string  `json:"status"` // "Authorized" | "Declined"
 }

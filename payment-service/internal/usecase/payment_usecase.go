@@ -73,6 +73,7 @@ func (uc *PaymentUseCase) Authorize(ctx context.Context, req AuthorizeRequest) (
 	event := messaging.PaymentCompletedEvent{
 		EventID:       uuid.NewString(),
 		OrderID:       req.OrderID,
+		TransactionID: p.TransactionID,
 		Amount:        float64(req.Amount) / 100.0,
 		CustomerEmail: email,
 		Status:        p.Status,

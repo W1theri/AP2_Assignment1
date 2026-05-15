@@ -45,10 +45,11 @@ func (s *Store) HasProcessed(eventID string) bool {
 }
 
 // MarkProcessed records an event ID as successfully processed.
-func (s *Store) MarkProcessed(eventID string) {
+func (s *Store) MarkProcessed(eventID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.records[eventID] = entry{processedAt: time.Now()}
+	return nil
 }
 
 // evict periodically removes expired entries to prevent unbounded memory growth.

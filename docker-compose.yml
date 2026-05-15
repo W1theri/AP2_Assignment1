@@ -1,6 +1,17 @@
-# Assignment 3: Event-Driven Architecture with RabbitMQ
+# Assignment 4: Performance Optimization & External Integrations
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   rabbitmq:
     image: rabbitmq:3.13-management-alpine
     container_name: rabbitmq
@@ -57,7 +68,11 @@ services:
     build:
       context: .
       dockerfile: payment-service/Dockerfile
+      args:
+        GOPROXY: https://goproxy.io,https://proxy.golang.org
     container_name: payment-service
+    env_file:
+      - .env
     environment:
       DB_HOST: payment-db
       DB_PORT: 5432
@@ -80,7 +95,11 @@ services:
     build:
       context: .
       dockerfile: order-service/Dockerfile
+      args:
+        GOPROXY: https://goproxy.io,https://proxy.golang.org
     container_name: order-service
+    env_file:
+      - .env
     environment:
       DB_HOST: order-db
       DB_PORT: 5432
@@ -91,6 +110,7 @@ services:
       PAYMENT_BASE_URL: http://payment-service:8081
       PAYMENT_GRPC_ADDR: payment-service:50051
       GRPC_STREAM_PORT: :50052
+      REDIS_URL: redis://redis:6379
     ports:
       - "8080:8080"
       - "50052:50052"
@@ -99,16 +119,26 @@ services:
         condition: service_healthy
       payment-service:
         condition: service_started
+      redis:
+        condition: service_healthy
 
   notification-service:
     build:
       context: .
       dockerfile: notification-service/Dockerfile
+      args:
+        GOPROXY: https://goproxy.io,https://proxy.golang.org
     container_name: notification-service
+    env_file:
+      - .env
     environment:
       AMQP_URL: amqp://guest:guest@rabbitmq:5672/
+      REDIS_URL: redis://redis:6379
+      PROVIDER_MODE: SIMULATED
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
 volumes:

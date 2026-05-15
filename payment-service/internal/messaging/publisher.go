@@ -6,6 +6,7 @@ import "context"
 type PaymentCompletedEvent struct {
 	EventID       string  `json:"event_id"`
 	OrderID       string  `json:"order_id"`
+	TransactionID string  `json:"transaction_id"`
 	Amount        float64 `json:"amount"` // in dollars
 	CustomerEmail string  `json:"customer_email"`
 	Status        string  `json:"status"`

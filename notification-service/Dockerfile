@@ -1,18 +1,20 @@
 FROM golang:1.21-alpine AS builder
+WORKDIR /src
 
-WORKDIR /app
-ENV GOPROXY=https://goproxy.io,direct
+ARG GOPROXY=https://goproxy.io,https://proxy.golang.org
+ENV GOPROXY=${GOPROXY}
+ENV GOSUMDB=sum.golang.org
+
 RUN apk add --no-cache git ca-certificates
 
-# Copy go mod files first for layer caching
-COPY notification-service/go.mod notification-service/go.sum ./
+COPY notification-service/go.mod notification-service/go.sum ./notification-service/
+WORKDIR /src/notification-service
 RUN go mod download
 
-# Copy source
-COPY notification-service/ ./
-RUN CGO_ENABLED=0 GOOS=linux go build -o /notification-service ./cmd/notification-service
+COPY notification-service ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o /out/notification-service ./cmd/notification-service
 
 FROM alpine:3.19
 RUN apk add --no-cache ca-certificates
-COPY --from=builder /notification-service /notification-service
+COPY --from=builder /out/notification-service /notification-service
 ENTRYPOINT ["/notification-service"]
